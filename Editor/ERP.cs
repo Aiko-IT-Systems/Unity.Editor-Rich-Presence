@@ -134,7 +134,7 @@ namespace ERP
             lastTimestamp = settings.LastTimestamp;
             lastSessionID = settings.LastSessionID;
             Errored = settings.Errored;
-			_enabled = settings.Enabled;
+			_enabled = settings.enabled;
             Log("Applied Settings from file");
             GetNames();
         }
