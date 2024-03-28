@@ -32,7 +32,7 @@ namespace ERP
             {
                 if (value == _showSceneName)
                     return;
-                
+
                 _showSceneName = value;
                 ERPSettings.SaveSettings();
                 UpdateActivity();
@@ -40,7 +40,7 @@ namespace ERP
             get
             {
                 return _showSceneName;
-            } 
+            }
         }
         public static bool ShowProjectName
         {
@@ -48,7 +48,7 @@ namespace ERP
             {
                 if (value == _showProjectName)
                     return;
-                
+
                 _showProjectName = value;
                 ERPSettings.SaveSettings();
                 UpdateActivity();
@@ -56,7 +56,7 @@ namespace ERP
             get
             {
                 return _showProjectName;
-            } 
+            }
         }
         public static bool ResetOnSceneChange
         {
@@ -64,7 +64,7 @@ namespace ERP
             {
                 if (value == _resetOnSceneChange)
                     return;
-                
+
                 _resetOnSceneChange = value;
                 ERPSettings.SaveSettings();
                 UpdateActivity();
@@ -72,7 +72,7 @@ namespace ERP
             get
             {
                 return _resetOnSceneChange;
-            } 
+            }
         }
         public static bool DebugMode
         {
@@ -80,7 +80,7 @@ namespace ERP
             {
                 if (value == _debugMode)
                     return;
-                
+
                 _debugMode = value;
                 ERPSettings.SaveSettings();
             }
@@ -89,7 +89,22 @@ namespace ERP
                 return _debugMode;
             }
         }
-        
+        public static bool Enabled
+        {
+            set
+            {
+                if (value == _enabled)
+                    return;
+
+                _enabled = value;
+                ERPSettings.SaveSettings();
+            }
+            get
+            {
+                return _enabled;
+            }
+        }
+
         public static bool EditorClosed = true;
         public static long lastTimestamp = 0;
         public static long lastSessionID = 0;
@@ -101,7 +116,8 @@ namespace ERP
         private static bool _showProjectName = true;
         private static bool _resetOnSceneChange = false;
         private static bool _debugMode = false;
-        
+		private static bool _enabled = true;
+
         static ERP()
         {
             ERPSettings.GetSettings();
@@ -118,16 +134,17 @@ namespace ERP
             lastTimestamp = settings.LastTimestamp;
             lastSessionID = settings.LastSessionID;
             Errored = settings.Errored;
+			_enabled = settings.Enabled;
             Log("Applied Settings from file");
             GetNames();
         }
-        
+
         public static async void DelayStart(int delay = 1000)
         {
             await Task.Delay(delay);
             Init();
         }
-        
+
         public static void Init()
         {
             if (Errored && lastSessionID == EditorAnalyticsSessionInfo.id)
@@ -142,6 +159,7 @@ namespace ERP
                 LogWarning("Can't find Discord's Process");
                 Failed = true;
                 Errored = true;
+				Enabled = false;
                 ERPSettings.SaveSettings();
                 return;
             }
@@ -165,6 +183,7 @@ namespace ERP
                 if (!Failed)
                     DelayStart(2000);
                 Failed = true;
+				Enabled = false;
                 return;
             }
 
@@ -209,9 +228,12 @@ namespace ERP
                 discord.RunCallbacks();
 
         }
-        
+
         private static void UpdateActivity()
         {
+			if(!Enabled)
+				return;
+
             Log("Updating Activity");
             if (discord == null)
                 Init();
@@ -251,7 +273,7 @@ namespace ERP
 
             ERPSettings.SaveSettings();
         }
-        
+
         public static long GetTimestamp()
         {
             if (!ResetOnSceneChange)
@@ -265,24 +287,24 @@ namespace ERP
             Log("Got time stamp: " + unixTimestamp);
             return unixTimestamp;
         }
-        
+
         public static void Log(object message)
         {
             if (DebugMode)
                 Debug.Log(_prefix + ": " + message);
         }
-        
+
         public static void LogWarning(object message)
         {
             if (DebugMode)
                 Debug.LogWarning(_prefix + ": " + message);
         }
-        
+
         public static void LogError(object message)
         {
             Debug.LogError(_prefix + ": " + message);
         }
-        
+
         private static bool DiscordRunning()
         {
             Process[] processes = Process.GetProcessesByName("Discord");

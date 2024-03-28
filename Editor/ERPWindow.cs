@@ -20,20 +20,21 @@ namespace ERP
             Enabled,
             Disable
         }
-        
+
         public static ERPWindow Window;
-        
+
         private static Font _fontRegular;
         private static Font _fontHeader;
         private static GUIStyle _headerStyle;
         private static GUIStyle _textStyle;
         private static Texture _unityLogo;
         private static Texture _background;
-        
+
         private static Visibility _sceneNameVisibility;
         private static Visibility _projectNameVisibility;
         private static Status _resetOnSceneChange;
         private static Status _debugMode;
+		private static Status _enabled;
 
         [MenuItem("Window/Editor Rich Presence")]
         private static void Init()
@@ -84,7 +85,7 @@ namespace ERP
             CreateStyles();
 
             GUI.DrawTexture(new Rect(0, 0, maxSize.x, maxSize.y), _background, ScaleMode.StretchToFill);
-            
+
             GUILayout.Label("Editor Rich Presence", _headerStyle);
 
             if (ERP.Errored)
@@ -93,22 +94,22 @@ namespace ERP
                 Links();
                 return;
             }
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.Label(_unityLogo, GUILayout.Height(80f), GUILayout.Width(80));
-            
+
             GUILayout.BeginVertical();
             GUILayout.Label("Unity", _textStyle);
             if (ERP.ShowSceneName)
                 GUILayout.Label(ERP.SceneName, _textStyle);
             if (ERP.ShowProjectName)
                 GUILayout.Label(ERP.ProjectName, _textStyle);
-            
+
             long final = DateTimeOffset.Now.ToUnixTimeSeconds() - ERP.lastTimestamp;
             TimeSpan difference = TimeSpan.FromSeconds(final);
             GUILayout.Label($"{difference} elapsed", _textStyle);
             GUILayout.EndVertical();
-            
+
             GUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
@@ -117,12 +118,14 @@ namespace ERP
             GUILayout.Label("Project name visibility", _textStyle);
             GUILayout.Label("Reset time on scene change", _textStyle);
             GUILayout.Label("Debug mode", _textStyle);
+			GUILayout.Label("Enabled", _textStyle);
             EditorGUILayout.EndVertical();
             EditorGUILayout.BeginVertical();
             _sceneNameVisibility = (Visibility)EditorGUILayout.EnumPopup(string.Empty, _sceneNameVisibility);
             _projectNameVisibility = (Visibility)EditorGUILayout.EnumPopup(string.Empty, _projectNameVisibility);
             _resetOnSceneChange = (Status)EditorGUILayout.EnumPopup(string.Empty, _resetOnSceneChange);
             _debugMode = (Status)EditorGUILayout.EnumPopup(string.Empty, _debugMode);
+            _enabled = (Status)EditorGUILayout.EnumPopup(string.Empty, _enabled);
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
 
@@ -143,7 +146,7 @@ namespace ERP
             {
                 Application.OpenURL("https://github.com/MarshMello0/Editor-Rich-Presence");
             }
-            
+
             EditorGUILayout.EndHorizontal();
         }
 
@@ -153,22 +156,23 @@ namespace ERP
             ERP.ShowProjectName = _projectNameVisibility == Visibility.Visible;
             ERP.ResetOnSceneChange = _resetOnSceneChange == Status.Enabled;
             ERP.DebugMode = _debugMode == Status.Enabled;
+			ERP.Enabled = _enabled == Status.Enabled;
         }
 
         private void ErrorUI()
         {
             EditorGUILayout.BeginHorizontal();
-            
+
             GUILayout.Label("An error has occurred", _textStyle);
             if (GUILayout.Button("Retry"))
             {
                 ERP.Errored = false;
                 ERP.Init();
             }
-            
+
             EditorGUILayout.EndHorizontal();
         }
-        
+
         private bool ToggleButton(string trueText, string falseText, ref bool value)
         {
             if (value && GUILayout.Button(trueText))
